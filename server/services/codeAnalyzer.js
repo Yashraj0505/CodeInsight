@@ -1,4 +1,4 @@
-const fs = require('fs');
+import fs from 'fs';
 
 const analyzeFile = (content, filename) => {
     let functions = [];
@@ -70,4 +70,4 @@ const analyzeFile = (content, filename) => {
     return { functions, classes, imports };
 };
 
-module.exports = { analyzeFile };
+export { analyzeFile };

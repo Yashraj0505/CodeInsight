@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { apiFetch } from '../utils/api';
 import { Send, Bot, User, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
@@ -23,14 +24,15 @@ const QuestionPanel = ({ activeFileId, projectId }) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/chat', {
+      const response = await apiFetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: userMessage, contextFileId: activeFileId, projectId })
+        body: JSON.stringify({ question: userMessage, contextFileId: activeFileId, projectId }),
       });
 
       const data = await response.json();
-      setMessages(prev => [...prev, { role: 'ai', text: data.answer }]);
+      const text = data.answer || data.error || "No response received.";
+      setMessages(prev => [...prev, { role: 'ai', text }]);
     } catch (err) {
       console.error("Chat error:", err);
       setMessages(prev => [...prev, { role: 'ai', text: "**Error:** Cannot connect to the Code Insight backend." }]);
@@ -40,17 +42,8 @@ const QuestionPanel = ({ activeFileId, projectId }) => {
   };
 
   return (
-    <div className="question-panel" style={{ display: 'flex', flexDirection: 'column', maxHeight: '420px' }}>
-      {/* Chat History */}
-      <div className="chat-history" style={{
-        flex: 1,
-        overflowY: 'auto',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px',
-        padding: '16px 0',
-        marginBottom: '8px'
-      }}>
+    <div className="question-panel">
+      <div className="chat-history">
         {messages.length === 0 && (
           <div style={{ color: 'var(--text-muted)', textAlign: 'center', fontSize: '0.9rem', marginTop: '8px' }}>
             <Bot size={24} style={{ marginBottom: '8px', opacity: 0.5 }} />
@@ -138,7 +131,7 @@ const QuestionPanel = ({ activeFileId, projectId }) => {
 
       {/* Input bar */}
       <div className="chat-input-wrapper">
-        <form onSubmit={handleAsk} style={{ position: 'relative', maxWidth: '900px', margin: '0 auto', width: '100%' }}>
+        <form onSubmit={handleAsk}>
           <input
             type="text"
             className="chat-input"

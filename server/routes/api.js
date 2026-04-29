@@ -1,33 +1,19 @@
-const express = require('express');
-const multer = require('multer');
-
-const {
-    uploadProject,
-    getProjects,
-    deleteProject,
-    getStructure,
-    getFileAnalysis
-} = require('../controllers/projectController');
-const { askQuestion } = require('../controllers/chatController');
+import express from 'express';
+import multer from 'multer';
+import { uploadProject, uploadProjectGithub, getProjects, deleteProject, getStructure, getFileAnalysis } from '../controllers/projectController.js';
+import { askQuestion } from '../controllers/chatController.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Setup Multer to use memory storage temporarily before writing to disk
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage, limits: { fileSize: 50 * 1024 * 1024 } }); // 50MB limit
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
-// Match what the frontend expects exactly
-router.post('/project/upload', upload.array('files'), uploadProject);
-router.get('/projects', getProjects); // All projects summary
-router.delete('/project/:projectId', deleteProject);
-router.get('/project/:projectId/structure', getStructure);
-router.get('/project/:projectId/file/:fileId', getFileAnalysis);
+router.post('/project/upload',            upload.array('files'), protect, uploadProject);
+router.post('/project/github',            protect, uploadProjectGithub);
+router.get('/projects',                   protect, getProjects);
+router.delete('/project/:projectId',      protect, deleteProject);
+router.get('/project/:projectId/structure',          protect, getStructure);
+router.get('/project/:projectId/file/:fileId',       protect, getFileAnalysis);
+router.post('/chat',                      protect, askQuestion);
 
-// Specific analysis overview
-router.get('/analysis', (req, res) => {
-    res.json({ message: "Use /project/:projectId/file/:fileId for file details" });
-});
-
-router.post('/chat', askQuestion);
-
-module.exports = router;
+export default router;

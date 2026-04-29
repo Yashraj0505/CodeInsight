@@ -1,85 +1,110 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from './firebase';
+import { apiFetch } from './utils/api';
+
 import Sidebar from './components/Sidebar';
 import CodeViewer from './components/CodeViewer';
 import QuestionPanel from './components/QuestionPanel';
-import Dashboard from './components/Dashboard';
+import Dashboard from './pages/Dashboard';
+import Auth from './pages/Auth';
 
-function App() {
+// Redirects to /auth if no token is present
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  return token ? children : <Navigate to="/auth" replace />;
+};
+
+function Workspace() {
   const [projectId, setProjectId] = useState(null);
   const [files, setFiles] = useState([]);
   const [activeFileId, setActiveFileId] = useState(null);
   const [activeFileDetails, setActiveFileDetails] = useState(null);
 
-  // Fetch file list from backend for the active project
   const fetchStructure = useCallback(async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/project/${id}/structure`);
-      if (!response.ok) throw new Error("Not found");
-      const data = await response.json();
-      setFiles(data);
-      
-      // Reset active file if the structure changed
+      const res = await apiFetch(`/api/project/${id}/structure`);
+      if (!res.ok) throw new Error();
+      setFiles(await res.json());
       setActiveFileId(null);
       setActiveFileDetails(null);
-    } catch (error) {
-      console.error("Error fetching structure:", error);
-      // Project might have been deleted, go back to dashboard
+    } catch {
       setProjectId(null);
     }
   }, []);
 
-  // Fetch full details of a specific file
   const fetchFileDetails = async (fileId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/project/${projectId}/file/${fileId}`);
-      const data = await response.json();
-      setActiveFileDetails(data);
-    } catch (error) {
-      console.error("Error fetching file details:", error);
+      const res = await apiFetch(`/api/project/${projectId}/file/${fileId}`);
+      setActiveFileDetails(await res.json());
+    } catch (err) {
+      console.error('Error fetching file details:', err);
     }
   };
 
   useEffect(() => {
-    if (projectId) {
-        fetchStructure(projectId);
-    }
+    if (projectId) fetchStructure(projectId);
   }, [projectId, fetchStructure]);
 
-  // When user clicks a file in the sidebar
   const handleFileSelect = (id) => {
     setActiveFileId(id);
     fetchFileDetails(id);
   };
 
-  // Note: we removed file-level delete to focus on project-level delete in dashboard
-  const handleDelete = async (id) => {}; 
-
   if (!projectId) {
-      return (
-          <div className="app-container">
-             <Dashboard onSelectProject={setProjectId} />
-          </div>
-      );
+    return <Dashboard onSelectProject={setProjectId} />;
   }
 
   return (
     <div className="app-container">
-      {/* Left panel */}
-      <Sidebar 
-        files={files} 
-        activeFileId={activeFileId} 
-        onFileSelect={handleFileSelect} 
-        onDelete={handleDelete}
+      <Sidebar
+        files={files}
+        activeFileId={activeFileId}
+        onFileSelect={handleFileSelect}
+        onDelete={() => {}}
         onBack={() => setProjectId(null)}
       />
-      
-      {/* Right panel */}
       <div className="main-content">
         <CodeViewer file={activeFileDetails} />
         <QuestionPanel activeFileId={activeFileId} projectId={projectId} />
       </div>
     </div>
+  );
+}
+
+function App() {
+  const [authReady, setAuthReady] = useState(false);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const token = await user.getIdToken(true); // force refresh
+        localStorage.setItem('token', token);
+      } else {
+        localStorage.removeItem('token');
+      }
+      setAuthReady(true);
+    });
+    return unsub;
+  }, []);
+
+  if (!authReady) return null;
+
+  return (
+    <Routes>
+      <Route path="/auth" element={<Auth />} />
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Workspace />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 

@@ -13,7 +13,7 @@ SyntaxHighlighter.registerLanguage('cpp', cpp);
 const CodeViewer = ({ file }) => {
   if (!file) {
     return (
-      <div className="no-file-selected">
+      <div className="no-file-selected" style={{ flex: 1 }}>
         <LayoutDashboard size={48} color="#475569" strokeWidth={1.5} />
         <p>Select a file from the sidebar to view code and AI insights</p>
       </div>
@@ -46,7 +46,9 @@ const CodeViewer = ({ file }) => {
           showLineNumbers={true}
           wrapLines={true}
         >
-          {file.content || "// Empty file"}
+          {file.diskMissing
+            ? "// ⚠️ File no longer exists on disk. The project may need to be re-uploaded."
+            : file.content ?? "// Empty file"}
         </SyntaxHighlighter>
       </div>
 
