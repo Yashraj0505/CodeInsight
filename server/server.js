@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // ── Environment validation ────────────────────────────────
-const REQUIRED_ENV = ["MONGO_URI", "GROQ_API_KEY", "PORT"];
+const REQUIRED_ENV = ["MONGO_URI", "GROQ_API_KEY", "PORT", "CLOUDINARY_CLOUD_NAME", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET"];
 const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
 if (missing.length) {
   console.error(`❌ Missing required environment variables: ${missing.join(", ")}`);
@@ -30,10 +30,14 @@ const PORT = process.env.PORT;
 await connectDB();
 await reindexUploads();
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+  credentials: true,
+}));
 app.use(express.json());
 
 app.get("/", (req, res) => res.send("🚀 CodeInsight API is running..."));
+app.get("/health", (req, res) => res.json({ status: "ok", db: "connected" }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/module/projects", projectRoutes);
