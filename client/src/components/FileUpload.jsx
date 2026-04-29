@@ -37,10 +37,8 @@ const FileUpload = ({ onUploadSuccess }) => {
     formData.append('projectName', projectName);
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/project/upload', {
+      const response = await apiFetch('/api/project/upload', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
