@@ -40,12 +40,60 @@ body {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
+  user-select: none; /* prevent text selection while dragging */
 }
 
-/* ── Sidebar ── */
+/* ── Left panel (file tree) ── */
+.panel-sidebar {
+  flex-shrink: 0;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Centre panel (code + analysis) ── */
+.panel-centre {
+  flex: 1;
+  min-width: 300px;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Right panel (chat) ── */
+.panel-chat {
+  flex-shrink: 0;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-panel);
+  backdrop-filter: blur(12px);
+  border-left: 1px solid var(--border-light);
+}
+
+/* ── Drag-to-resize divider ── */
+.resize-divider {
+  width: 4px;
+  flex-shrink: 0;
+  height: 100%;
+  cursor: col-resize;
+  background: var(--border-light);
+  transition: background 0.15s;
+  z-index: 20;
+}
+
+.resize-divider:hover,
+.resize-divider:active {
+  background: var(--accent-primary);
+}
+
+/* ── Sidebar (inner content of left panel) ── */
 .sidebar {
-  width: 280px;
-  min-width: 280px;
+  width: 100%;
+  height: 100%;
   background: var(--bg-panel);
   backdrop-filter: blur(12px);
   border-right: 1px solid var(--border-light);
@@ -53,7 +101,6 @@ body {
   flex-direction: column;
   padding: 20px 14px;
   overflow: hidden;
-  z-index: 10;
 }
 
 .sidebar h2 {
@@ -73,15 +120,6 @@ body {
   flex: 1;
   overflow-y: auto;
   padding-right: 4px;
-}
-
-/* ── Main content (right of sidebar) ── */
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-width: 0;
 }
 
 /* ── Code + analysis scrollable area ── */
@@ -213,16 +251,13 @@ body {
   font-weight: 500;
 }
 
-/* ── Question / Chat panel (pinned bottom) ── */
+/* ── Question / Chat panel (right column, full height) ── */
 .question-panel {
-  flex-shrink: 0;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  height: 280px;
-  background: var(--bg-panel);
-  border-top: 1px solid var(--border-light);
-  backdrop-filter: blur(10px);
-  padding: 12px 24px 14px;
+  overflow: hidden;
+  padding: 16px 16px 14px;
 }
 
 .chat-history {

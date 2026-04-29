@@ -71,7 +71,7 @@ const Sidebar = ({ files, activeFileId, onFileSelect, onBack }) => {
   }, [files]);
 
   return (
-    <div className="sidebar" style={{ width: '320px' }}>
+    <div className="sidebar">
       <button 
           onClick={onBack}
           style={{

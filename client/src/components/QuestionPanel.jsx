@@ -43,6 +43,10 @@ const QuestionPanel = ({ activeFileId, projectId }) => {
 
   return (
     <div className="question-panel">
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexShrink: 0, borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>
+        <Bot size={18} color="#c4b5fd" />
+        <span style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-main)' }}>AI Assistant</span>
+      </div>
       <div className="chat-history">
         {messages.length === 0 && (
           <div style={{ color: 'var(--text-muted)', textAlign: 'center', fontSize: '0.9rem', marginTop: '8px' }}>

@@ -13,9 +13,11 @@ SyntaxHighlighter.registerLanguage('cpp', cpp);
 const CodeViewer = ({ file }) => {
   if (!file) {
     return (
-      <div className="no-file-selected" style={{ flex: 1 }}>
-        <LayoutDashboard size={48} color="#475569" strokeWidth={1.5} />
-        <p>Select a file from the sidebar to view code and AI insights</p>
+      <div className="content-area">
+        <div className="no-file-selected" style={{ flex: 1 }}>
+          <LayoutDashboard size={48} color="#475569" strokeWidth={1.5} />
+          <p>Select a file from the sidebar to view code and AI insights</p>
+        </div>
       </div>
     );
   }
