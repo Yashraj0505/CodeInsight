@@ -35,48 +35,59 @@ const cleanTemp = (dir) => {
 
 // ── controllers ──────────────────────────────────────────────────────────────
 
-export const uploadProject = asyncHandler(async (req, res) => {
-  if (!req.files || req.files.length === 0)
-    return res.status(400).json({ error: "No files provided" });
-
-  if (req.files.length > MAX_FILES)
-    return res.status(400).json({ error: `Exceeds max file limit of ${MAX_FILES}` });
-
-  for (const f of req.files) {
-    if (f.size > MAX_FILE_SIZE)
-      return res.status(400).json({ error: `File "${f.originalname}" exceeds the 1MB size limit` });
-  }
-
-  const projectName = req.body.projectName?.trim() || `Project-${Date.now()}`;
-  const project = await Project.create({ name: projectName, userId: req.user.uid, uploadTime: Date.now() });
-
-  const tempDir = makeTempDir();
+export const uploadProject = async (req, res) => {
+  console.log("UPLOAD STARTED");
   try {
-    if (req.files.length === 1 && req.files[0].originalname.endsWith(".zip")) {
-      const zip = new AdmZip(req.files[0].buffer);
-      zip.extractAllTo(tempDir, true);
-    } else {
-      const paths = req.body.paths ? JSON.parse(req.body.paths) : [];
-      req.files.forEach((file, index) => {
-        const rawPath = paths[index] || file.originalname;
-        if (hasDotDot(rawPath)) return;
-        const safePath = rawPath.split(/[\\\/]/).map(sanitizeFilename).join(path.sep);
-        const fullPath = path.join(tempDir, safePath);
-        if (!fullPath.startsWith(tempDir)) return;
-        fs.mkdirSync(path.dirname(fullPath), { recursive: true });
-        fs.writeFileSync(fullPath, file.buffer);
-      });
+    if (!req.files || req.files.length === 0)
+      return res.status(400).json({ error: "No files provided" });
+
+    if (req.files.length > MAX_FILES)
+      return res.status(400).json({ error: `Exceeds max file limit of ${MAX_FILES}` });
+
+    for (const f of req.files) {
+      if (f.size > MAX_FILE_SIZE)
+        return res.status(400).json({ error: `File "${f.originalname}" exceeds the 1MB size limit` });
     }
 
-    const count = await processProject(tempDir, project);
-    res.json({ message: "Project uploaded successfully", projectId: project._id.toString(), count });
-  } catch (err) {
-    await Project.findByIdAndDelete(project._id).catch(() => {});
-    throw err;
-  } finally {
-    cleanTemp(tempDir);
+    const projectName = req.body.projectName?.trim() || `Project-${Date.now()}`;
+    const project = await Project.create({ name: projectName, userId: req.user.uid, uploadTime: Date.now() });
+
+    const tempDir = makeTempDir();
+    try {
+      if (req.files.length === 1 && req.files[0].originalname.endsWith(".zip")) {
+        const zip = new AdmZip(req.files[0].buffer);
+        zip.extractAllTo(tempDir, true);
+      } else {
+        const paths = req.body.paths ? JSON.parse(req.body.paths) : [];
+        req.files.forEach((file, index) => {
+          const rawPath = paths[index] || file.originalname;
+          if (hasDotDot(rawPath)) return;
+          const safePath = rawPath.split(/[\\\/]/).map(sanitizeFilename).join(path.sep);
+          const fullPath = path.join(tempDir, safePath);
+          if (!fullPath.startsWith(tempDir)) return;
+          fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+          fs.writeFileSync(fullPath, file.buffer);
+        });
+      }
+
+      const count = await processProject(tempDir, project);
+      console.log("UPLOAD SUCCESS");
+      res.json({ message: "Project uploaded successfully", projectId: project._id.toString(), count });
+    } catch (err) {
+      await Project.findByIdAndDelete(project._id).catch(() => {});
+      throw err;
+    } finally {
+      cleanTemp(tempDir);
+    }
+  } catch (error) {
+    console.error("UPLOAD ERROR:", error);
+    return res.status(500).json({
+      message: "Upload failed",
+      error: error.message,
+      stack: error.stack,
+    });
   }
-});
+};
 
 export const uploadProjectGithub = asyncHandler(async (req, res) => {
   const { repoUrl, projectName: projectNameReq } = req.body;
