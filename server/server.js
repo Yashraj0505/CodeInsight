@@ -44,9 +44,6 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
 }));
-
-// Handle preflight requests for all routes
-app.options("*", cors());
 app.use(express.json());
 
 app.get("/", (req, res) => res.send("🚀 CodeInsight API is running..."));
