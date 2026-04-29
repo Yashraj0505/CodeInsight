@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { UploadCloud, Loader2, GitBranch } from 'lucide-react';
-import { apiFetch, BASE } from '../utils/api';
+import { apiFetch } from '../utils/api';
 
 const FileUpload = ({ onUploadSuccess }) => {
   const [isUploading, setIsUploading] = useState(false);
@@ -37,10 +37,8 @@ const FileUpload = ({ onUploadSuccess }) => {
     formData.append('projectName', projectName);
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${BASE}/api/project/upload`, {
+      const response = await apiFetch('/api/project/upload', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
@@ -52,7 +50,7 @@ const FileUpload = ({ onUploadSuccess }) => {
     } catch (err) {
       console.error("Error uploading files:", err);
       setIsUploading(false);
-      alert("Failed to upload files. Make sure server is running on port 5000.");
+      alert("Failed to upload files. Check your connection and try again.");
     }
   };
 

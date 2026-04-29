@@ -72,7 +72,7 @@ const Dashboard = ({ onSelectProject }) => {
         <div className="empty-state" style={{ marginTop: '80px' }}>
           <FolderOpen size={48} style={{ opacity: 0.5, marginBottom: '20px' }} />
           <h2>Could not load projects</h2>
-          <p>Make sure the server is running on port 5000 and MongoDB is connected.</p>
+          <p>Could not load projects. Check your connection or try refreshing.</p>
         </div>
       ) : projects.length === 0 ? (
         <div className="empty-state" style={{ marginTop: '80px' }}>

@@ -30,10 +30,23 @@ const PORT = process.env.PORT;
 await connectDB();
 await reindexUploads();
 
+const ALLOWED_ORIGINS = [
+  "http://localhost:5173",
+  "https://codeinsight01.vercel.app",
+];
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. curl, Postman, server-to-server)
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS: origin ${origin} not allowed`));
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
 }));
+
+// Handle preflight requests for all routes
+app.options("*", cors());
 app.use(express.json());
 
 app.get("/", (req, res) => res.send("🚀 CodeInsight API is running..."));
