@@ -17,7 +17,8 @@ const Dashboard = ({ onSelectProject }) => {
     try {
       const response = await apiFetch('/api/projects');
       if (!response.ok) throw new Error();
-      setProjects(await response.json());
+      const data = await response.json();
+      setProjects(data);
       setLoadError(false);
     } catch {
       setLoadError(true);

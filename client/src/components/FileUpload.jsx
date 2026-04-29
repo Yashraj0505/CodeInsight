@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { UploadCloud, Loader2, GitBranch } from 'lucide-react';
-import { apiFetch } from '../utils/api';
+import { apiFetch, BASE } from '../utils/api';
 
 const FileUpload = ({ onUploadSuccess }) => {
   const [isUploading, setIsUploading] = useState(false);
@@ -37,8 +37,10 @@ const FileUpload = ({ onUploadSuccess }) => {
     formData.append('projectName', projectName);
 
     try {
-      const response = await apiFetch('/api/project/upload', {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${BASE}/api/project/upload`, {
         method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
