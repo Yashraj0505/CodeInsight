@@ -37,6 +37,8 @@ const cleanTemp = (dir) => {
 
 export const uploadProject = async (req, res) => {
   console.log("UPLOAD STARTED");
+  console.log("REQ.FILES:", req.files?.length ?? "undefined");
+  console.log("REQ.BODY keys:", Object.keys(req.body || {}));
   try {
     if (!req.files || req.files.length === 0)
       return res.status(400).json({ error: "No files provided" });
